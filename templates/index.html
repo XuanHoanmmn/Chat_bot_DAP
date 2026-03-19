@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HateSpeech Detector - Vietnamese Hate Speech Detection Chatbot</title>
+    <meta name="description"
+        content="RAG Chatbot for Vietnamese Hate Speech Detection using PhoBERT-CNN-BiLSTM architecture">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <span class="logo-text">PCB-HateDet</span>
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="info-card">
+                    <h3>About</h3>
+                    <p>Chatbot nhận diện ngôn ngữ thù ghét tiếng Việt dựa trên mô hình PhoBERT-CNN-BiLSTM</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>Classification Labels</h3>
+                    <div class="label-list">
+                        <div class="label-item clean">
+                            <span class="label-dot"></span>
+                            <div>
+                                <strong>CLEAN</strong>
+                                <small>Bình thường, không độc hại</small>
+                            </div>
+                        </div>
+                        <div class="label-item offensive">
+                            <span class="label-dot"></span>
+                            <div>
+                                <strong>OFFENSIVE</strong>
+                                <small>Xúc phạm, thô tục</small>
+                            </div>
+                        </div>
+                        <div class="label-item hate">
+                            <span class="label-dot"></span>
+                            <div>
+                                <strong>HATE</strong>
+                                <small>Thù ghét nhóm/cộng đồng</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="sidebar-footer">
+                    <button class="btn-reset" id="btnReset" title="New conversation">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M1 4v6h6M23 20v-6h-6" />
+                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+                        </svg>
+                        Cuộc trò chuyện mới
+                    </button>
+                </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="chat-header">
+                <button class="btn-menu" id="btnMenu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
+                <div class="header-info">
+                    <h1>Vietnamese Hate Speech Detector</h1>
+                </div>
+            </header>
+
+            <!-- Chat Area -->
+            <div class="chat-area" id="chatArea">
+                <!-- Welcome Message -->
+                <div class="welcome-container" id="welcomeContainer">
+                    <div class="welcome-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </div>
+                    <h2>Xin chào! 👋</h2>
+                    <p>Tôi là chatbot nhận diện ngôn ngữ thù ghét tiếng Việt.</p>
+                    <p class="welcome-sub">Hãy nhập một câu text bất kỳ, tôi sẽ phân loại nó là <span
+                            class="tag clean">CLEAN</span>, <span class="tag offensive">OFFENSIVE</span>, hay <span
+                            class="tag hate">HATE</span></p>
+
+                    <div class="quick-actions">
+                        <button class="quick-btn" data-text="Hôm nay thời tiết đẹp quá">
+                            <span class="quick-icon">☀️</span>
+                            Thử câu bình thường
+                        </button>
+                        <button class="quick-btn" data-text="Mày ngu quá, không biết gì cả">
+                            <span class="quick-icon">😠</span>
+                            Thử câu xúc phạm
+                        </button>
+                        <button class="quick-btn" data-text="Bọn người đó không xứng đáng sống trên đời này">
+                            <span class="quick-icon">🚫</span>
+                            Thử câu thù ghét
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages will be appended here -->
+                <div class="messages-container" id="messagesContainer"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea id="messageInput" placeholder="Nhập câu text tiếng Việt để phân loại..." rows="1"
+                        maxlength="1000"></textarea>
+                    <button class="btn-send" id="btnSend" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span>Chatbot sử dụng Llama 3.3 AI với kiến thức từ nghiên cứu PhoBERT-CNN-BiLSTM</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
